@@ -47,7 +47,7 @@ public class Main {
         double previousXposition = x0_position;
         double previousZposition = z0_position;
 
-        System.out.println("\ttime\t\t|\t\tx position\t\t|\t\t\tz position\t\t\t|\t\tvelocity\t|\t\ttheta\t\t|\t\taltitude");
+        System.out.println("\ttime\t\t\t|\t\tx position\t\t\t|\t\t\tz position\t\t\t|\t\tvelocity\t\t\t|\t\t\ttheta\t\t\t|\t\taltitude");
         System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
 
@@ -69,7 +69,7 @@ public class Main {
             previousXposition = xPosition;
             previousZposition = zPosition;
 
-            System.out.println((double)i/100 + "\t\t\t\t\t" + x_positions.get(i) + "\t\t  " + z_positions.get(i) + "\t\t  " + velocity + "\t\t  " + theta + "\t\t" + altitude);
+            System.out.println((double)i/100 + "  \t\t\t\t\t" + x_positions.get(i) + "  \t\t  " + z_positions.get(i) + "  \t\t      " + velocity + "   \t\t  " + theta + "  \t\t" + altitude);
         }
 
 
@@ -79,7 +79,9 @@ public class Main {
 
     static double V(int iteration, double altitude, double previousTheta, double previousVelocity) {
 
-        double kd = k_drag(atm.Pressure(altitude), Cd(iteration), A_area, d_mass(iteration));
+        double dynamicPressure = q_dynamicPressure(atm.Density(atm.Temperature(altitude), atm.Pressure(altitude)), previousVelocity);
+
+        double kd = k_drag(dynamicPressure, Cd(iteration), A_area, d_mass(iteration));
         double kt = k_thrust(F_thrust(iteration),d_mass(iteration));
 
         double velocity = (kt - g * Math.cos(Math.toRadians(previousTheta)) - kd * Math.pow(previousVelocity, 2)) * time_iteration + previousVelocity;
@@ -95,8 +97,8 @@ public class Main {
         return (velocity * Math.sin(Math.toRadians(theta))) * time_iteration + previousZPosition;
     }
 
-    static double k_drag(double pressure, double Cd, double area, double mass) {
-        return (pressure*Cd*area)/(2*mass);
+    static double k_drag(double q_dynPressure, double Cd, double area, double mass) {
+        return (q_dynPressure*Cd*area)/(mass);
     }
 
     static double k_thrust(double F_thrust, double mass) {
@@ -118,6 +120,10 @@ public class Main {
 
     static double Cd(int iteration) {
         return Cd.get(iteration);
+    }
+
+    static double q_dynamicPressure(double density, double velocity) {
+        return (density * velocity * velocity)/2;
     }
 
 
