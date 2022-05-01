@@ -17,7 +17,7 @@ public class Main {
     static double mass0_total = 25;
     static double mass0_engine = 4.659;
     static double altitude0 = 980;
-    static double isp = 197.6; //209.5; //197.6
+    static double isp = 197.6; //209.5       197.6
     static double A_area = Math.PI * Math.pow(0.14,2);
 
     static double V0 = 2;
@@ -39,23 +39,31 @@ public class Main {
 
 
     public static void main(String[] args) {
-
-
+        double mass = mass0_total;
         double altitude = altitude0;
         double previousTheta = theta0;
         double previousVelocity = V0;
         double previousXposition = x0_position;
         double previousZposition = z0_position;
 
-        System.out.println("\ttime\t\t|\t\tx position\t\t|\t\tz position\t\t|\t\tvelocity\t\t|\t\ttheta\t\t|\t\taltitude");
-        System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+        System.out.println("\ttime\t|\tx position\t|\tz position\t|\tvelocity\t|\tvelocity_z\t|\ttheta\t\t|\taltitude\t|\tF thrust\t|\td mass\t\t|\tkt\t\t\t|\tkd\t\t\t|\tcd");
+        System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
 
-        for( int i = 0; i<2000; i ++) {
+        for( int i = 0; i<1000; i ++) {
 
 
-            double velocity = V(i,altitude,previousTheta,previousVelocity);
+            double dynamicPressure = q_dynamicPressure(atm.Density(atm.Temperature(altitude), atm.Pressure(altitude)), previousVelocity);
+            double speedOfSound = atm.SpeedOfSound(atm.Temperature(altitude));
+
+            double kd = k_drag(dynamicPressure, Cd(altitude, previousVelocity, speedOfSound), A_area, mass);
+            double kt = k_thrust(F_thrust(i),mass);
+            double cd = Cd(altitude, previousVelocity, speedOfSound);
+
+            double velocity = V(kt,kd,previousTheta,previousVelocity);
+
             double theta = theta(previousTheta, velocity);
+
 
             double xPosition = x_position(velocity, theta, previousXposition);
             double zPosition = z_position(velocity, theta, previousZposition);
@@ -63,24 +71,30 @@ public class Main {
             x_positions.add(xPosition);
             z_positions.add(zPosition);
 
-            //iteration += time_iteration;
             altitude = altitude + zPosition - previousZposition;
             previousTheta = theta;
             previousVelocity = velocity;
             previousXposition = xPosition;
             previousZposition = zPosition;
+            mass = mass - d_mass(i);
 
-
-
-
-
+            if(i%10 == 0){
+                System.out.println();
+            }
             System.out.println(
                     "\t" + String.format("%.2f",(double)i/100)
-                            + "\t\t\t\t" + String.format("%.6f",  x_positions.get(i))
-                            + "\t\t\t\t" + String.format("%.6f", z_positions.get(i))
-                            + "\t\t\t\t" + String.format("%.6f",velocity)
-                            + "\t\t\t\t" + String.format("%.6f",theta)
-                            + "\t\t\t" + String.format("%.6f",altitude));
+                            + "\t\t" + String.format("%.6f",  x_positions.get(i))
+                            + "\t\t" + String.format("%.6f", z_positions.get(i))
+                            + "\t\t" + String.format("%.6f",velocity)
+                            + "\t\t" + String.format("%.6f",velocity * Math.sin(Math.toRadians(theta)))
+                            + "\t\t" + String.format("%.6f",theta)
+                            + "\t\t" + String.format("%.6f",altitude)
+                            + "\t\t" + String.format("%.6f",F_thrust(i))
+                            + "\t\t" + String.format("%.6f",mass)
+                            + "\t\t" + String.format("%.6f",kt)
+                            + "\t\t" + String.format("%.6f",kd)
+                            + "\t\t" + String.format("%.6f",cd));
+
         }
 
 
@@ -88,13 +102,7 @@ public class Main {
 
     }
 
-    static double V(int iteration, double altitude, double previousTheta, double previousVelocity) {
-
-        double dynamicPressure = q_dynamicPressure(atm.Density(atm.Temperature(altitude), atm.Pressure(altitude)), previousVelocity);
-        double speedOfSound = atm.SpeedOfSound(atm.Temperature(altitude));
-
-        double kd = k_drag(dynamicPressure, Cd(altitude, previousVelocity, speedOfSound), A_area, d_mass(iteration));
-        double kt = k_thrust(F_thrust(iteration),d_mass(iteration));
+    static double V(double kt,double kd, double previousTheta, double previousVelocity) {
 
         double velocity = (kt - g * Math.cos(Math.toRadians(previousTheta)) - kd * Math.pow(previousVelocity, 2)) * time_iteration + previousVelocity;
 
@@ -119,7 +127,7 @@ public class Main {
 
     static double d_mass(int iteration) {
         double dMass = F_thrust(iteration)*time_iteration/(isp*g);
-        return mass0_total - dMass;
+        return dMass;
     }
 
     static double F_thrust(int iteration) {
@@ -134,7 +142,7 @@ public class Main {
     }
 
     static double theta(double previousTheta, double velocity) {
-        return ((g/velocity) * Math.sin(previousTheta))* time_iteration + previousTheta;
+        return ((g/velocity) * Math.cos(previousTheta))* time_iteration + previousTheta;
     }
 
     static double Cd(double altitude, double velocity, double speedOfSound) {
