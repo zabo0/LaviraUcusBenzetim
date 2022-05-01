@@ -47,7 +47,7 @@ public class Main {
         double previousXposition = x0_position;
         double previousZposition = z0_position;
 
-        System.out.println("\ttime\t\t\t|\t\tx position\t\t\t|\t\t\tz position\t\t\t|\t\tvelocity\t\t\t|\t\t\ttheta\t\t\t|\t\taltitude");
+        System.out.println("\ttime\t\t|\t\tx position\t\t|\t\tz position\t\t|\t\tvelocity\t\t|\t\ttheta\t\t|\t\taltitude");
         System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
 
@@ -70,7 +70,17 @@ public class Main {
             previousXposition = xPosition;
             previousZposition = zPosition;
 
-            System.out.println((double)i/100 + "  \t\t\t\t\t" + x_positions.get(i) + "  \t\t  " + z_positions.get(i) + "  \t\t      " + velocity + "   \t\t  " + theta + "  \t\t" + altitude);
+
+
+
+
+            System.out.println(
+                    "\t" + String.format("%.2f",(double)i/100)
+                            + "\t\t\t\t" + String.format("%.6f",  x_positions.get(i))
+                            + "\t\t\t\t" + String.format("%.6f", z_positions.get(i))
+                            + "\t\t\t\t" + String.format("%.6f",velocity)
+                            + "\t\t\t\t" + String.format("%.6f",theta)
+                            + "\t\t\t" + String.format("%.6f",altitude));
         }
 
 
