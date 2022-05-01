@@ -79,29 +79,6 @@ public class Aerodynamic {
 //				}else {
 //
 //				}
-
-
-//				while (cellIterator.hasNext()) {
-//
-//					Cell cell = cellIterator.next();
-//
-//					switch (cell.getCellType()) {
-//					case Cell.CELL_TYPE_STRING: // field that represents string cell type
-//						//System.out.print(cell.getStringCellValue() + "\t\t\t");
-//						break;
-//					case Cell.CELL_TYPE_NUMERIC: // field that represents number cell type
-//						//System.out.print(cell.getNumericCellValue() + "\t\t\t");
-//
-//						double value =
-//
-//
-//						F_Thrust.add((double) cell.getNumericCellValue());
-//						System.out.println(F_Thrust.get(i));
-//						break;
-//					default:
-//					}
-//				}
-                //System.out.println("");
             }
         } catch (Exception e) {
             e.printStackTrace();

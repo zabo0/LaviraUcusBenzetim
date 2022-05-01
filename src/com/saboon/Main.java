@@ -50,15 +50,19 @@ public class Main {
         System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
 
-        for( int i = 0; i<1000; i ++) {
+        for( int i = 0; i<4500; i ++) {
 
 
             double dynamicPressure = q_dynamicPressure(atm.Density(atm.Temperature(altitude), atm.Pressure(altitude)), previousVelocity);
             double speedOfSound = atm.SpeedOfSound(atm.Temperature(altitude));
 
-            double kd = k_drag(dynamicPressure, Cd(altitude, previousVelocity, speedOfSound), A_area, mass);
+            double density = atm.Density(atm.Temperature(altitude),atm.Pressure(altitude));
+
+            double kd = k_drag(density, Cd(altitude, previousVelocity, speedOfSound), A_area, mass);
             double kt = k_thrust(F_thrust(i),mass);
             double cd = Cd(altitude, previousVelocity, speedOfSound);
+
+
 
             double velocity = V(kt,kd,previousTheta,previousVelocity);
 
@@ -83,7 +87,7 @@ public class Main {
             }
             System.out.println(
                     "\t" + String.format("%.2f",(double)i/100)
-                            + "\t\t" + String.format("%.6f",  x_positions.get(i))
+                            + "\t\t" + String.format("%.6f", x_positions.get(i))
                             + "\t\t" + String.format("%.6f", z_positions.get(i))
                             + "\t\t" + String.format("%.6f",velocity)
                             + "\t\t" + String.format("%.6f",velocity * Math.sin(Math.toRadians(theta)))
@@ -169,12 +173,6 @@ public class Main {
     static double q_dynamicPressure(double density, double velocity) {
         return (density * velocity * velocity)/2;
     }
-
-
-
-
-
-
 
 
 }
