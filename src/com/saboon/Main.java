@@ -53,6 +53,7 @@ public class Main {
 
         for( int i = 0; i<20; i ++) {
 
+
             double velocity = V(i,altitude,previousTheta,previousVelocity);
             double theta = theta(previousTheta, velocity);
 
@@ -63,7 +64,7 @@ public class Main {
             z_positions.add(zPosition);
 
             //iteration += time_iteration;
-            altitude = altitude + xPosition;
+            altitude = altitude + zPosition;
             previousTheta = theta;
             previousVelocity = velocity;
             previousXposition = xPosition;
