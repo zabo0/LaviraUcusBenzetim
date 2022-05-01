@@ -14,11 +14,11 @@ public class Main {
 
     static double theta0 = 85;
 
-    static double mass0_total = 25;
+    static double mass0_total = 28.032;
     static double mass0_engine = 4.659;
     static double altitude0 = 980;
     static double isp = 197.6; //209.5       197.6
-    static double A_area = Math.PI * Math.pow(0.14,2);
+    static double A_area = Math.PI * Math.pow(0.126,2);
 
     static double V0 = 2;
     static double v0_x = Math.cos(Math.toRadians(theta0))*V0;
@@ -98,12 +98,7 @@ public class Main {
                             + "\t\t" + String.format("%.6f",kt)
                             + "\t\t" + String.format("%.6f",kd)
                             + "\t\t" + String.format("%.6f",cd));
-
         }
-
-
-
-
     }
 
     static double V(double kt,double kd, double previousTheta, double previousVelocity) {
@@ -121,8 +116,8 @@ public class Main {
         return (velocity * Math.sin(Math.toRadians(theta))) * time_iteration + previousZPosition;
     }
 
-    static double k_drag(double q_dynPressure, double Cd, double area, double mass) {
-        return (q_dynPressure*Cd*area)/(mass);
+    static double k_drag(double density, double Cd, double area, double mass) {
+        return (density*Cd*area)/(mass);
     }
 
     static double k_thrust(double F_thrust, double mass) {
