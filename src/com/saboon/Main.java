@@ -2,6 +2,7 @@ package com.saboon;
 
 import com.saboon.Atmosphere.Atmosphere;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 public class Main {
@@ -33,13 +34,12 @@ public class Main {
 
 
     static Atmosphere atm = new Atmosphere();
-    static ArrayList<Double> Cd = new ArrayList<>();
-    static ArrayList<Double> FThrust = new ArrayList<>();
+    static Aerodynamic aero = new Aerodynamic();
+
 
 
     public static void main(String[] args) {
 
-        initialize();
 
         double altitude = altitude0;
         double previousTheta = theta0;
@@ -51,7 +51,7 @@ public class Main {
         System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
 
-        for( int i = 0; i<20; i ++) {
+        for( int i = 0; i<2000; i ++) {
 
 
             double velocity = V(i,altitude,previousTheta,previousVelocity);
@@ -64,7 +64,7 @@ public class Main {
             z_positions.add(zPosition);
 
             //iteration += time_iteration;
-            altitude = altitude + zPosition;
+            altitude = altitude + zPosition - previousZposition;
             previousTheta = theta;
             previousVelocity = velocity;
             previousXposition = xPosition;
@@ -81,8 +81,9 @@ public class Main {
     static double V(int iteration, double altitude, double previousTheta, double previousVelocity) {
 
         double dynamicPressure = q_dynamicPressure(atm.Density(atm.Temperature(altitude), atm.Pressure(altitude)), previousVelocity);
+        double speedOfSound = atm.SpeedOfSound(atm.Temperature(altitude));
 
-        double kd = k_drag(dynamicPressure, Cd(iteration), A_area, d_mass(iteration));
+        double kd = k_drag(dynamicPressure, Cd(altitude, previousVelocity, speedOfSound), A_area, d_mass(iteration));
         double kt = k_thrust(F_thrust(iteration),d_mass(iteration));
 
         double velocity = (kt - g * Math.cos(Math.toRadians(previousTheta)) - kd * Math.pow(previousVelocity, 2)) * time_iteration + previousVelocity;
@@ -112,15 +113,39 @@ public class Main {
     }
 
     static double F_thrust(int iteration) {
-        return FThrust.get(iteration);
+        double Ft;
+        try {
+            Ft = aero.getF_Thrust().get(iteration);
+        } catch (Exception e) {
+            return 0;
+        }
+
+        return Ft;
     }
 
     static double theta(double previousTheta, double velocity) {
         return ((g/velocity) * Math.sin(previousTheta))* time_iteration + previousTheta;
     }
 
-    static double Cd(int iteration) {
-        return Cd.get(iteration);
+    static double Cd(double altitude, double velocity, double speedOfSound) {
+        double mach = Double.parseDouble(new DecimalFormat("#,#").format(velocity/speedOfSound));
+        double cd;
+        if(mach == 0) {
+            mach = 0.1;
+        }
+
+        if(altitude < 3000) {
+            cd = aero.getCd_0().get((int) (mach*10-1));
+            return cd;
+        }else if(altitude>=3000 && altitude<6000) {
+            cd = aero.getCd_3().get((int) (mach*10-1));
+            return cd;
+        }else if(altitude>=6000 && altitude<12000) {
+            cd = aero.getCd_6().get((int) (mach*10-1));
+            return cd;
+        }
+        cd = aero.getCd_12().get((int) (mach*10-1));
+        return cd;
     }
 
     static double q_dynamicPressure(double density, double velocity) {
@@ -128,64 +153,7 @@ public class Main {
     }
 
 
-    static void initialize(){
 
-        Cd.add(0.015971);
-        Cd.add(0.01597);
-        Cd.add(0.016096);
-        Cd.add(0.016417);
-        Cd.add(0.016951);
-        Cd.add(0.017603);
-
-        Cd.add(0.018518);
-        Cd.add(0.019692);
-        Cd.add(0.021105);
-        Cd.add(0.022716);
-        Cd.add(0.024726);
-        Cd.add(0.02683);
-
-        Cd.add(0.029017);
-        Cd.add(0.01597);
-        Cd.add(0.031276);
-        Cd.add(0.033574);
-        Cd.add(0.035858);
-        Cd.add(0.038168);
-
-        Cd.add(0.040499);
-        Cd.add(0.042846);
-        Cd.add(0.04521);
-        Cd.add(0.04759);
-        Cd.add(0.04998);
-        Cd.add(0.05238);
-
-        FThrust.add(450.02);
-        FThrust.add(1350.1);
-        FThrust.add(2003.2);
-        FThrust.add(1959.5);
-        FThrust.add(2045.1);
-        FThrust.add(2169.0);
-
-        FThrust.add(2280.4);
-        FThrust.add(2384.9);
-        FThrust.add(2471.1);
-        FThrust.add(2523.9);
-        FThrust.add(2554.5);
-        FThrust.add(2585.1);
-
-        FThrust.add(2615.8);
-        FThrust.add(2643.5);
-        FThrust.add(2645.1);
-        FThrust.add(2640.3);
-        FThrust.add(2635.5);
-        FThrust.add(2630.7);
-
-        FThrust.add(2626.7);
-        FThrust.add(2624.3);
-        FThrust.add(2622.0);
-        FThrust.add(2619.7);
-        FThrust.add(2617.4);
-        FThrust.add(2615.1);
-    }
 
 
 
