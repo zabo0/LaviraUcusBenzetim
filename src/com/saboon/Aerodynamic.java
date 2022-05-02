@@ -8,17 +8,23 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 public class Aerodynamic {
 
 
+    private ArrayList<Double> Cd = new ArrayList<>();
     private ArrayList<Double> Cd_0 = new ArrayList<>();
     private ArrayList<Double> Cd_3 = new ArrayList<>();
     private ArrayList<Double> Cd_6 = new ArrayList<>();
     private ArrayList<Double> Cd_12 = new ArrayList<>();
     private ArrayList<Double> F_Thrust = new ArrayList<>();
+
+    public ArrayList<Double> getCd() {
+        return Cd;
+    }
 
     public ArrayList<Double> getCd_0() {
         return Cd_0;
@@ -42,51 +48,14 @@ public class Aerodynamic {
 
     public Aerodynamic() {
 
-        initialize();
 
-        try {
-            File file = new File("C:\\Users\\Sabahattin\\Desktop\\Lavira Rocket\\documents\\ucus benzetim raporlari\\codes\\sources\\veri_itki_F_2022.xlsx");
-            FileInputStream fis = new FileInputStream(file); // obtaining bytes from the file
+        initializeCdLavira();
+        initializeTfLavira();
 
-
-            // creating Workbook instance that refers to .xlsx file
-            XSSFWorkbook wb = new XSSFWorkbook(fis);
-            XSSFSheet sheet = wb.getSheetAt(0); // creating a Sheet object to retrieve object
-
-
-
-            Iterator<Row> rowItr = sheet.iterator(); // iterating over excel file
-
-            double previousTime = 0;
-
-            while (rowItr.hasNext()) {
-
-                Row row = rowItr.next();
-                Iterator<Cell> cellIterator = row.cellIterator(); // iterating over each column
-
-
-                XSSFCell cellTime = sheet.getRow(row.getRowNum()).getCell(0);
-                XSSFCell cellFthrust = sheet.getRow(row.getRowNum()).getCell(1);
-
-
-                double time = cellTime.getNumericCellValue();
-
-                double sub = time - previousTime;
-                F_Thrust.add((double) cellFthrust.getNumericCellValue());
-
-//				if(sub == 0.01) {
-//					F_Thrust.add((double) cellFthrust.getNumericCellValue());
-//				}else {
-//
-//				}
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
     }
 
-    public void initialize() {
+    public void initializeCdTekno() {
         Cd_0.add(0.434);
         Cd_0.add(0.3954);
         Cd_0.add(0.3752);
@@ -172,6 +141,203 @@ public class Aerodynamic {
         Cd_12.add(0.361);
     }
 
+    public void initializeCdLavira(){
+        try {
+
+            File file = new File("C:\\Users\\Sabahattin\\Desktop\\Lavira Rocket\\documents\\ucus benzetim raporlari\\codes\\sources\\time-mach-Cd.xlsx");
+            FileInputStream fis = new FileInputStream(file); // obtaining bytes from the file
 
 
+            // creating Workbook instance that refers to .xlsx file
+            XSSFWorkbook wb = new XSSFWorkbook(fis);
+            XSSFSheet sheet = wb.getSheetAt(0); // creating a Sheet object to retrieve object
+
+
+
+            Iterator<Row> rowItr = sheet.iterator(); // iterating over excel file
+
+
+            int previousRowNum = 0;
+            int rowNum;
+            int timeCellNum = 0;
+            int CdCellNum = 2;
+
+            while (rowItr.hasNext()) {
+
+                Row row = rowItr.next();
+                Iterator<Cell> cellIterator = row.cellIterator(); // iterating over each column
+
+                rowNum = row.getRowNum();
+
+                XSSFCell previousRowTime = sheet.getRow(previousRowNum).getCell(timeCellNum);
+                XSSFCell rowTime = sheet.getRow(rowNum).getCell(timeCellNum);
+
+                XSSFCell previousRowCd = sheet.getRow(previousRowNum).getCell(CdCellNum);
+                XSSFCell rowCd = sheet.getRow(rowNum).getCell(CdCellNum);
+
+
+                ArrayList<Double> interValues = new ArrayList<>();
+                double previousTime = previousRowTime.getNumericCellValue();
+                double previousCd = previousRowCd.getNumericCellValue();
+                double currentTime = rowTime.getNumericCellValue();
+                double currentCd = rowCd.getNumericCellValue();
+                interValues = interpolation(
+                        change(previousTime, 2),
+                        previousCd,
+                        change(currentTime, 2),
+                        currentCd
+                );
+
+                if (interValues != null){
+                    if (!interValues.isEmpty()){
+                        Cd.addAll(interValues);
+                    }
+                }
+                previousRowNum = rowNum;
+
+
+
+
+            }
+        }catch (Exception e){
+            System.out.println(e);
+        }
+    }
+
+    public void inititalizeTfTekno(){
+        try {
+            File file = new File("C:\\Users\\Sabahattin\\Desktop\\Lavira Rocket\\documents\\ucus benzetim raporlari\\codes\\sources\\veri_itki_F_2022.xlsx");
+            FileInputStream fis = new FileInputStream(file); // obtaining bytes from the file
+
+
+            // creating Workbook instance that refers to .xlsx file
+            XSSFWorkbook wb = new XSSFWorkbook(fis);
+            XSSFSheet sheet = wb.getSheetAt(0); // creating a Sheet object to retrieve object
+
+
+
+            Iterator<Row> rowItr = sheet.iterator(); // iterating over excel file
+
+            double previousTime = 0;
+
+            while (rowItr.hasNext()) {
+
+                Row row = rowItr.next();
+                Iterator<Cell> cellIterator = row.cellIterator(); // iterating over each column
+
+
+                XSSFCell cellTime = sheet.getRow(row.getRowNum()).getCell(0);
+                XSSFCell cellFthrust = sheet.getRow(row.getRowNum()).getCell(1);
+
+
+                double time = cellTime.getNumericCellValue();
+
+                double sub = time - previousTime;
+                F_Thrust.add((double) cellFthrust.getNumericCellValue());
+
+//				if(sub == 0.01) {
+//					F_Thrust.add((double) cellFthrust.getNumericCellValue());
+//				}else {
+//
+//				}
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void initializeTfLavira(){
+        try {
+
+            File file = new File("C:\\Users\\Sabahattin\\Desktop\\Lavira Rocket\\documents\\ucus benzetim raporlari\\codes\\sources\\itki_degerleri.xlsx");
+            FileInputStream fis = new FileInputStream(file); // obtaining bytes from the file
+
+
+            // creating Workbook instance that refers to .xlsx file
+            XSSFWorkbook wb = new XSSFWorkbook(fis);
+            XSSFSheet sheet = wb.getSheetAt(0); // creating a Sheet object to retrieve object
+
+
+
+            Iterator<Row> rowItr = sheet.iterator(); // iterating over excel file
+
+
+            int previousRowNum = 0;
+            int rowNum;
+            int timeCellNum = 0;
+            int CdCellNum = 1;
+
+            while (rowItr.hasNext()) {
+
+                Row row = rowItr.next();
+                Iterator<Cell> cellIterator = row.cellIterator(); // iterating over each column
+
+
+                rowNum = row.getRowNum();
+
+                XSSFCell previousRowTime = sheet.getRow(previousRowNum).getCell(timeCellNum);
+                XSSFCell rowTime = sheet.getRow(rowNum).getCell(timeCellNum);
+
+                XSSFCell previousRowCd = sheet.getRow(previousRowNum).getCell(CdCellNum);
+                XSSFCell rowCd = sheet.getRow(rowNum).getCell(CdCellNum);
+
+
+                ArrayList<Double> interValues = new ArrayList<>();
+                double previousTime = previousRowTime.getNumericCellValue();
+                double previousFt = previousRowCd.getNumericCellValue();
+                double currentTime = rowTime.getNumericCellValue();
+                double currentFt = rowCd.getNumericCellValue();
+                interValues = interpolation(
+                        change(previousTime, 2),
+                        previousFt,
+                        change(currentTime, 2),
+                        currentFt
+                );
+
+                if (interValues != null){
+                    if (!interValues.isEmpty()){
+                        F_Thrust.addAll(interValues);
+                    }
+                }
+                previousRowNum = rowNum;
+            }
+        }catch (Exception e){
+
+        }
+    }
+
+    public ArrayList<Double> interpolation(double previousTime, double previousValue, double currentTime, double currentValue){
+
+        if (currentValue != 0){
+            ArrayList<Double> interValues = new ArrayList<>();
+
+            interValues.add(previousValue);
+
+            int count = (int) ((currentTime - previousTime) / 0.01 - 1);
+            double slope = (currentValue - previousValue)/(currentTime - previousTime);
+            double interNextCd;
+
+            for (int i = 0; i<count; i++){
+                interNextCd = slope * 0.01 + previousValue;
+                interValues.add(interNextCd);
+                previousValue = interNextCd;
+            }
+            return interValues;
+        }
+
+        return null;
+    }
+
+    static double change(double value, int decimalpoint)
+    {
+
+        // Using the pow() method
+        value = value * Math.pow(10, decimalpoint);
+        value = Math.floor(value);
+        value = value / Math.pow(10, decimalpoint);
+
+        //System.out.println(value);
+
+        return value;
+    }
 }

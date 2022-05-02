@@ -15,7 +15,7 @@ public class Main {
     static double theta0 = 85;
 
     static double mass0_total = 28.032;
-    static double mass0_engine = 4.659;
+    static double mass0_engine = 4.349;  //4.659
     static double altitude0 = 980;
     static double isp = 197.6; //209.5       197.6
     static double A_area = Math.PI * Math.pow(0.126,2);
@@ -58,9 +58,9 @@ public class Main {
 
             double density = atm.Density(atm.Temperature(altitude),atm.Pressure(altitude));
 
-            double kd = k_drag(density, Cd(altitude, previousVelocity, speedOfSound), A_area, mass);
+            double kd = k_drag(density, Cd(i, altitude, previousVelocity, speedOfSound), A_area, mass);
             double kt = k_thrust(F_thrust(i),mass);
-            double cd = Cd(altitude, previousVelocity, speedOfSound);
+            double cd = Cd(i, altitude, previousVelocity, speedOfSound);
 
 
 
@@ -144,25 +144,27 @@ public class Main {
         return ((g/velocity) * Math.cos(previousTheta))* time_iteration + previousTheta;
     }
 
-    static double Cd(double altitude, double velocity, double speedOfSound) {
-        double mach = Double.parseDouble(new DecimalFormat("#,#").format(velocity/speedOfSound));
-        double cd;
-        if(mach == 0) {
-            mach = 0.1;
-        }
+    static double Cd(int i, double altitude, double velocity, double speedOfSound) {
+//        double mach = Double.parseDouble(new DecimalFormat("#,#").format(velocity/speedOfSound));
+//        double cd;
+//        if(mach == 0) {
+//            mach = 0.1;
+//        }
+//
+//        if(altitude < 3000) {
+//            cd = aero.getCd_0().get((int) (mach*10-1));
+//            return cd;
+//        }else if(altitude>=3000 && altitude<6000) {
+//            cd = aero.getCd_3().get((int) (mach*10-1));
+//            return cd;
+//        }else if(altitude>=6000 && altitude<12000) {
+//            cd = aero.getCd_6().get((int) (mach*10-1));
+//            return cd;
+//        }
+//        cd = aero.getCd_12().get((int) (mach*10-1));
+//        return cd;
 
-        if(altitude < 3000) {
-            cd = aero.getCd_0().get((int) (mach*10-1));
-            return cd;
-        }else if(altitude>=3000 && altitude<6000) {
-            cd = aero.getCd_3().get((int) (mach*10-1));
-            return cd;
-        }else if(altitude>=6000 && altitude<12000) {
-            cd = aero.getCd_6().get((int) (mach*10-1));
-            return cd;
-        }
-        cd = aero.getCd_12().get((int) (mach*10-1));
-        return cd;
+        return aero.getCd().get(i);
     }
 
     static double q_dynamicPressure(double density, double velocity) {
