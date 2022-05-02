@@ -182,9 +182,9 @@ public class Aerodynamic {
                 double currentTime = rowTime.getNumericCellValue();
                 double currentCd = rowCd.getNumericCellValue();
                 interValues = interpolation(
-                        change(previousTime, 2),
+                        change(check(previousTime), 2),
                         previousCd,
-                        change(currentTime, 2),
+                        change(check(currentTime), 2),
                         currentCd
                 );
 
@@ -288,9 +288,9 @@ public class Aerodynamic {
                 double currentTime = rowTime.getNumericCellValue();
                 double currentFt = rowCd.getNumericCellValue();
                 interValues = interpolation(
-                        change(previousTime, 2),
+                        change(check(previousTime), 2),
                         previousFt,
-                        change(currentTime, 2),
+                        change(check(currentTime), 2),
                         currentFt
                 );
 
@@ -339,5 +339,12 @@ public class Aerodynamic {
         //System.out.println(value);
 
         return value;
+    }
+
+    static double check(double time){
+        if (time>1000){
+            return time/10000;
+        }
+        return time;
     }
 }
