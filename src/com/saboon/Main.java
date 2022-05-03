@@ -2,6 +2,7 @@ package com.saboon;
 
 import com.saboon.Atmosphere.Atmosphere;
 
+import javax.swing.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
@@ -52,8 +53,10 @@ public class Main {
         System.out.println("\ttime\t|\tx position\t|\tz position\t|\tvelocity\t|\tvelocity_z\t|\tvelocity_x\t|\ttheta\t\t|\taltitude\t|\tF thrust\t|\td mass\t\t|\tkt\t\t\t|\tkd\t\t\t|\tcd");
         System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
+//        Graph plt = new Graph();
 
-        for( int i = 0; i<7000; i ++) {
+
+        for( int i = 0; i<5000; i ++) {
 
 
             double dynamicPressure = q_dynamicPressure(atm.Density(atm.Temperature(altitude), atm.Pressure(altitude)), previousVelocity);
@@ -69,28 +72,28 @@ public class Main {
 
 /////////////////////////The Parallel-Perpendicular Coordinate Frame////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            double velocity = V(kt,kd,previousTheta,previousVelocity);
-            double theta = theta(previousTheta, velocity);
-            double vx = (velocity * Math.cos(Math.toRadians(theta))); //* time_iteration + previousV_x;
-            double vz = (velocity * Math.sin(Math.toRadians(theta)));//* time_iteration + previousV_z;
-            double xPosition = x_position(velocity, theta, previousXposition);
-            double zPosition = z_position(velocity, theta, previousZposition);
+//            double velocity = V(kt,kd,previousTheta,previousVelocity);
+//            double theta = theta(previousTheta, velocity);
+//            double vx = (velocity * Math.cos(Math.toRadians(theta))); //* time_iteration + previousV_x;
+//            double vz = (velocity * Math.sin(Math.toRadians(theta)));//* time_iteration + previousV_z;
+//            double xPosition = x_position(velocity, theta, previousXposition);
+//            double zPosition = z_position(velocity, theta, previousZposition);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////The X-Y Coordinate Frame///////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//            double Vcr = Vcr(kt, L_length);
-//            double vz = V_z(kt, kd, previousVelocity, previousV_z);
-//            double vx = V_x(kt, kd, previousVelocity, previousV_x);
-////            if (vx < Vcr){
-////                vx = vz * (previousV_z/previousV_x);
-////            }
-//            double velocity = V(vx, vz);
-//            double theta = theta(vz, vx, previousTheta);
-//            double xPosition = x_position(vx, previousXposition);
-//            double zPosition = z_position(vz, previousZposition);
+            double Vcr = Vcr(kt, L_length);
+            double vz = V_z(kt, kd, previousVelocity, previousV_z);
+            double vx = V_x(kt, kd, previousVelocity, previousV_x);
+//            if (vx < Vcr){
+//                vx = vz * (previousV_z/previousV_x);
+//            }
+            double velocity = V(vx, vz);
+            double theta = theta(vz, vx, previousTheta);
+            double xPosition = x_position(vx, previousXposition);
+            double zPosition = z_position(vz, previousZposition);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -133,67 +136,71 @@ public class Main {
                 break;
             }
         }
+
+        plot(x_positions, "xPos");
+        plot(z_positions, "zPos");
+
     }
 
 
 /////////////////////////The Parallel-Perpendicular Coordinate Frame////////////////////////////////////////////////////
-    static double V(double kt,double kd, double previousTheta, double previousVelocity) {
-
-        double velocity = (kt - g * Math.cos(Math.toRadians(previousTheta)) - kd * Math.pow(previousVelocity, 2)) * time_iteration + previousVelocity;
-
-        return velocity;
-    }
-
-    static double x_position(double velocity, double theta, double previousXPosition) {
-        return (velocity * Math.cos(Math.toRadians(theta))) * time_iteration + previousXPosition;
-    }
-
-    static double z_position(double velocity, double theta, double previousZPosition) {
-        return (velocity * Math.sin(Math.toRadians(theta))) * time_iteration + previousZPosition;
-    }
-
-    static double theta(double previousTheta, double velocity) {
-        double t = ((g/velocity) * Math.cos(previousTheta)) * time_iteration + previousTheta;
-        return t;
-    }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////The X-Y Coordinate Frame///////////////////////////////////////////////////////////////////////
-//    static double V(double vx, double vz) {
+//    static double V(double kt,double kd, double previousTheta, double previousVelocity) {
 //
-//        double velocity = Math.sqrt(vx*vx + vz*vz);
+//        double velocity = (kt - g * Math.cos(Math.toRadians(previousTheta)) - kd * Math.pow(previousVelocity, 2)) * time_iteration + previousVelocity;
 //
 //        return velocity;
 //    }
 //
-//    static double V_x(double kt, double kd, double previousVelocity, double previousV_x){
-//        double V_x = (kt * (previousV_x/previousVelocity) - kd *  previousVelocity * previousV_x) * time_iteration + previousV_x;
-//        return V_x;
+//    static double x_position(double velocity, double theta, double previousXPosition) {
+//        return (velocity * Math.cos(Math.toRadians(theta))) * time_iteration + previousXPosition;
 //    }
 //
-//    static double V_z(double kt, double kd, double previousVelocity, double previousV_z){
-//        double V_z = (kt * (previousV_z/previousVelocity) - kd * previousVelocity * previousV_z - g) * time_iteration + previousV_z;
-//        return V_z;
+//    static double z_position(double velocity, double theta, double previousZPosition) {
+//        return (velocity * Math.sin(Math.toRadians(theta))) * time_iteration + previousZPosition;
 //    }
 //
-//    static double Vcr(double kt, double L){
-//        double vcr= Math.sqrt(2 * kt * L);
-//        return vcr;
-//    }
-//
-//    static double x_position(double vx, double previousXPosition) {
-//        return vx * time_iteration + previousXPosition;
-//    }
-//
-//    static double z_position(double vz,  double previousZPosition) {
-//        return vz * time_iteration + previousZPosition;
-//    }
-//
-//    static double theta(double vx, double vz, double previousTheta) {
-//        double t = (Math.atan(vz/vx)) * time_iteration + previousTheta;
+//    static double theta(double previousTheta, double velocity) {
+//        double t = ((g/velocity) * Math.cos(previousTheta)) * time_iteration + previousTheta;
 //        return t;
 //    }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////The X-Y Coordinate Frame///////////////////////////////////////////////////////////////////////
+    static double V(double vx, double vz) {
+
+        double velocity = Math.sqrt(vx*vx + vz*vz);
+
+        return velocity;
+    }
+
+    static double V_x(double kt, double kd, double previousVelocity, double previousV_x){
+        double V_x = (kt * (previousV_x/previousVelocity) - kd *  previousVelocity * previousV_x) * time_iteration + previousV_x;
+        return V_x;
+    }
+
+    static double V_z(double kt, double kd, double previousVelocity, double previousV_z){
+        double V_z = (kt * (previousV_z/previousVelocity) - kd * previousVelocity * previousV_z - g) * time_iteration + previousV_z;
+        return V_z;
+    }
+
+    static double Vcr(double kt, double L){
+        double vcr= Math.sqrt(2 * kt * L);
+        return vcr;
+    }
+
+    static double x_position(double vx, double previousXPosition) {
+        return vx * time_iteration + previousXPosition;
+    }
+
+    static double z_position(double vz,  double previousZPosition) {
+        return vz * time_iteration + previousZPosition;
+    }
+
+    static double theta(double vx, double vz, double previousTheta) {
+        double t = (Math.atan(vz/vx)) * time_iteration + previousTheta;
+        return t;
+    }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -250,5 +257,17 @@ public class Main {
         return (density * velocity * velocity)/2;
     }
 
+
+    static void plot(ArrayList<Double> values, String title){
+        //create an instance of JFrame class
+        JFrame frame = new JFrame();
+        // set size, layout and location for frame.
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(new Graph(values));
+        frame.setSize(600, 600);
+        frame.setLocation(200, 200);
+        frame.setTitle(title);
+        frame.setVisible(true);
+    }
 
 }
