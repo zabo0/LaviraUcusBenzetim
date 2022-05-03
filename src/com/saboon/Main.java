@@ -14,11 +14,11 @@ public class Main {
 
     static double theta0 = 85;
 
-    static double mass0_total = 25;    //28.032
-    static double mass0_engine = 4.659;   //4.349  4.659
+    static double mass0_total = 28.032;    //28.032     25
+    static double mass0_engine = 4.349;   //4.349  4.659
     static double altitude0 = 980;
-    static double isp = 209.5; //209.5       197.6
-    static double A_area = Math.PI * Math.pow(0.14,2); //0.126
+    static double isp = 197.6; //209.5       197.6
+    static double A_area = Math.PI * Math.pow(0.126,2); //0.126    0.14
     static double L_length = 2;
 
     static double V0 = 2;
@@ -53,7 +53,7 @@ public class Main {
         System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
 
-        for( int i = 0; i<5500; i ++) {
+        for( int i = 0; i<7000; i ++) {
 
 
             double dynamicPressure = q_dynamicPressure(atm.Density(atm.Temperature(altitude), atm.Pressure(altitude)), previousVelocity);
@@ -74,7 +74,7 @@ public class Main {
             double vx = (velocity * Math.cos(Math.toRadians(theta))); //* time_iteration + previousV_x;
             double vz = (velocity * Math.sin(Math.toRadians(theta)));//* time_iteration + previousV_z;
             double xPosition = x_position(velocity, theta, previousXposition);
-            double zPosition= z_position(velocity, theta, previousXposition);
+            double zPosition = z_position(velocity, theta, previousZposition);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -104,6 +104,8 @@ public class Main {
             previousVelocity = velocity;
             previousV_x = vx;
             previousV_z = vz;
+            double dx = xPosition - previousXposition;
+            double dz = zPosition - previousZposition;
             previousXposition = xPosition;
             previousZposition = zPosition;
             mass = mass - d_mass(i);
@@ -113,8 +115,8 @@ public class Main {
             }
             System.out.println(
                     "\t" + String.format("%.2f",(double)i/100)
-                            + "\t\t" + String.format("%.6f", x_positions.get(i))
-                            + "\t\t" + String.format("%.6f", z_positions.get(i))
+                            + "\t\t" + String.format("%.6f", x_positions.get(i))//+"-"+String.format("%.6f", dx)
+                            + "\t\t" + String.format("%.6f", z_positions.get(i))//+"-"+String.format("%.6f", dz)
                             + "\t\t" + String.format("%.6f",velocity)
                             + "\t\t" + String.format("%.6f",vz)
                             + "\t\t" + String.format("%.6f",vx)
@@ -125,6 +127,10 @@ public class Main {
                             + "\t\t" + String.format("%.6f",kt)
                             + "\t\t" + String.format("%.6f",kd)
                             + "\t\t" + String.format("%.6f",cd));
+
+            if (velocity <= 0){
+                break;
+            }
         }
     }
 
@@ -146,7 +152,7 @@ public class Main {
     }
 
     static double theta(double previousTheta, double velocity) {
-        double t = Math.toDegrees(((g/velocity) * Math.cos(Math.toRadians(previousTheta)))) * time_iteration + previousTheta;
+        double t = ((g/velocity) * Math.cos(previousTheta)) * time_iteration + previousTheta;
         return t;
     }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

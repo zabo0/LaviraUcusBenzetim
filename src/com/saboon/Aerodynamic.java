@@ -50,10 +50,10 @@ public class Aerodynamic {
 
 
 //        initializeCdLavira();
-//        initializeTfLavira();
+        initializeTfLavira();
 
         initializeCdTekno();
-        inititalizeTfTekno();
+//        inititalizeTfTekno();
 
 
     }
@@ -246,25 +246,25 @@ public class Aerodynamic {
                 XSSFCell previousRowFt = sheet.getRow(previousRowNum).getCell(CdCellNum);
                 XSSFCell rowFt = sheet.getRow(rowNum).getCell(CdCellNum);
 
-                F_Thrust.add(rowFt.getNumericCellValue());
+                //F_Thrust.add(rowFt.getNumericCellValue());
 
                 ArrayList<Double> interValues = new ArrayList<>();
-//                double previousTime = previousRowTime.getNumericCellValue();
-//                double previousFt = previousRowFt.getNumericCellValue();
-//                double currentTime = rowTime.getNumericCellValue();
-//                double currentFt = rowFt.getNumericCellValue();
-//                interValues = interpolation(
-//                        change(check(previousTime), 2),
-//                        previousFt,
-//                        change(check(currentTime), 2),
-//                        currentFt
-//                );
-//
-//                if (interValues != null){
-//                    if (!interValues.isEmpty()){
-//                        F_Thrust.addAll(interValues);
-//                    }
-//                }
+                double previousTime = previousRowTime.getNumericCellValue();
+                double previousFt = previousRowFt.getNumericCellValue();
+                double currentTime = rowTime.getNumericCellValue();
+                double currentFt = rowFt.getNumericCellValue();
+                interValues = interpolation(
+                        change(check(previousTime), 2),
+                        previousFt,
+                        change(check(currentTime), 2),
+                        currentFt
+                );
+
+                if (interValues != null){
+                    if (!interValues.isEmpty()){
+                        F_Thrust.addAll(interValues);
+                    }
+                }
                 previousRowNum = rowNum;
             }
         }catch (Exception e){
