@@ -14,17 +14,21 @@ public class Main {
     static double time_iteration = 0.01;
 
     static double theta0 = 85;
+    static ArrayList<Double> thetas = new ArrayList<>();
 
     static double mass0_total = 28.032;    //28.032     25
     static double mass0_engine = 4.349;   //4.349  4.659
     static double altitude0 = 980;
     static double isp = 197.6; //209.5       197.6
     static double A_area = Math.PI * Math.pow(0.126,2); //0.126    0.14
-    static double L_length = 2;
+    static double L_length = 3.52;
 
     static double V0 = 2;
     static double v0_x = Math.cos(Math.toRadians(theta0))*V0;
     static double v0_z = Math.sin(Math.toRadians(theta0))*V0;
+    static ArrayList<Double> velocities = new ArrayList<>();
+    static ArrayList<Double> xVelocities = new ArrayList<>();
+    static ArrayList<Double> zVelocities = new ArrayList<>();
 
     static double x0_position = 0;
     static double z0_position = 0;
@@ -56,7 +60,7 @@ public class Main {
 //        Graph plt = new Graph();
 
 
-        for( int i = 0; i<5000; i ++) {
+        for( int i = 0; i<50000; i ++) {
 
 
             double dynamicPressure = q_dynamicPressure(atm.Density(atm.Temperature(altitude), atm.Pressure(altitude)), previousVelocity);
@@ -73,6 +77,7 @@ public class Main {
 /////////////////////////The Parallel-Perpendicular Coordinate Frame////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //            double velocity = V(kt,kd,previousTheta,previousVelocity);
+////            double theta = theta(previousV_z, velocity);
 //            double theta = theta(previousTheta, velocity);
 //            double vx = (velocity * Math.cos(Math.toRadians(theta))); //* time_iteration + previousV_x;
 //            double vz = (velocity * Math.sin(Math.toRadians(theta)));//* time_iteration + previousV_z;
@@ -91,7 +96,7 @@ public class Main {
 //                vx = vz * (previousV_z/previousV_x);
 //            }
             double velocity = V(vx, vz);
-            double theta = theta(vz, vx, previousTheta);
+            double theta = theta(vz, velocity);
             double xPosition = x_position(vx, previousXposition);
             double zPosition = z_position(vz, previousZposition);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -101,6 +106,10 @@ public class Main {
 
             x_positions.add(xPosition);
             z_positions.add(zPosition);
+            velocities.add(velocity);
+            xVelocities.add(vx);
+            zVelocities.add(vz);
+            thetas.add(theta);
 
             altitude = altitude + zPosition - previousZposition;
             previousTheta = theta;
@@ -132,13 +141,20 @@ public class Main {
                             + "\t\t" + String.format("%.6f",cd)
             );
 
-            if (velocity <= 0){
+            if (vz <= 0){
                 break;
             }
         }
 
-        plot(x_positions, "xPos");
+        plot(velocities, "velocity");
+        plot(zVelocities, "vz");
+        plot(xVelocities, "vx");
+        plot(thetas, "theta");
         plot(z_positions, "zPos");
+        plot(x_positions, "xPos");
+
+
+
 
     }
 
@@ -163,7 +179,15 @@ public class Main {
 //        double t = ((g/velocity) * Math.cos(previousTheta)) * time_iteration + previousTheta;
 //        return t;
 //    }
+
+//        static double theta(double vz, double velocity) {
+//        double t = Math.asin(vz/velocity);
+//        return t;
+//    }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 
 
 /////////////////////////The X-Y Coordinate Frame///////////////////////////////////////////////////////////////////////
@@ -197,8 +221,9 @@ public class Main {
         return vz * time_iteration + previousZPosition;
     }
 
-    static double theta(double vx, double vz, double previousTheta) {
-        double t = (Math.atan(vz/vx)) * time_iteration + previousTheta;
+
+    static double theta(double vz, double velocity) {
+        double t = Math.asin(vz/velocity);
         return t;
     }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -264,7 +289,7 @@ public class Main {
         // set size, layout and location for frame.
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(new Graph(values));
-        frame.setSize(600, 600);
+        frame.setSize(300, 300);
         frame.setLocation(200, 200);
         frame.setTitle(title);
         frame.setVisible(true);

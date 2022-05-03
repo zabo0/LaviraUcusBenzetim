@@ -50,10 +50,10 @@ public class Aerodynamic {
 
 
 //        initializeCdLavira();
-        initializeTfLavira();
+//        initializeTfLavira();
 
         initializeCdTekno();
-//        inititalizeTfTekno();
+        inititalizeTfTekno();
 
 
     }
@@ -246,25 +246,7 @@ public class Aerodynamic {
                 XSSFCell previousRowFt = sheet.getRow(previousRowNum).getCell(CdCellNum);
                 XSSFCell rowFt = sheet.getRow(rowNum).getCell(CdCellNum);
 
-                //F_Thrust.add(rowFt.getNumericCellValue());
-
-                ArrayList<Double> interValues = new ArrayList<>();
-                double previousTime = previousRowTime.getNumericCellValue();
-                double previousFt = previousRowFt.getNumericCellValue();
-                double currentTime = rowTime.getNumericCellValue();
-                double currentFt = rowFt.getNumericCellValue();
-                interValues = interpolation(
-                        change(check(previousTime), 2),
-                        previousFt,
-                        change(check(currentTime), 2),
-                        currentFt
-                );
-
-                if (interValues != null){
-                    if (!interValues.isEmpty()){
-                        F_Thrust.addAll(interValues);
-                    }
-                }
+                F_Thrust.add(rowFt.getNumericCellValue());
                 previousRowNum = rowNum;
             }
         }catch (Exception e){
@@ -304,15 +286,16 @@ public class Aerodynamic {
                 XSSFCell previousRowTime = sheet.getRow(previousRowNum).getCell(timeCellNum);
                 XSSFCell rowTime = sheet.getRow(rowNum).getCell(timeCellNum);
 
-                XSSFCell previousRowCd = sheet.getRow(previousRowNum).getCell(CdCellNum);
-                XSSFCell rowCd = sheet.getRow(rowNum).getCell(CdCellNum);
+                XSSFCell previousRowFt = sheet.getRow(previousRowNum).getCell(CdCellNum);
+                XSSFCell rowFt = sheet.getRow(rowNum).getCell(CdCellNum);
 
+                //F_Thrust.add(rowCd.getNumericCellValue());
 
                 ArrayList<Double> interValues = new ArrayList<>();
                 double previousTime = previousRowTime.getNumericCellValue();
-                double previousFt = previousRowCd.getNumericCellValue();
+                double previousFt = previousRowFt.getNumericCellValue();
                 double currentTime = rowTime.getNumericCellValue();
-                double currentFt = rowCd.getNumericCellValue();
+                double currentFt = rowFt.getNumericCellValue();
                 interValues = interpolation(
                         change(check(previousTime), 2),
                         previousFt,
