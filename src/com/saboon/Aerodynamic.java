@@ -49,8 +49,11 @@ public class Aerodynamic {
     public Aerodynamic() {
 
 
-        initializeCdLavira();
-        initializeTfLavira();
+//        initializeCdLavira();
+//        initializeTfLavira();
+
+        initializeCdTekno();
+        inititalizeTfTekno();
 
 
     }
@@ -181,6 +184,9 @@ public class Aerodynamic {
                 double previousCd = previousRowCd.getNumericCellValue();
                 double currentTime = rowTime.getNumericCellValue();
                 double currentCd = rowCd.getNumericCellValue();
+
+                //Cd.add(currentCd);
+
                 interValues = interpolation(
                         change(check(previousTime), 2),
                         previousCd,
@@ -192,6 +198,8 @@ public class Aerodynamic {
                     if (!interValues.isEmpty()){
                         Cd.addAll(interValues);
                     }
+                }else {
+                    Cd.add(0.0);
                 }
                 previousRowNum = rowNum;
 
@@ -218,7 +226,11 @@ public class Aerodynamic {
 
             Iterator<Row> rowItr = sheet.iterator(); // iterating over excel file
 
-            double previousTime = 0;
+
+            int previousRowNum = 0;
+            int rowNum;
+            int timeCellNum = 0;
+            int CdCellNum = 1;
 
             while (rowItr.hasNext()) {
 
@@ -226,23 +238,37 @@ public class Aerodynamic {
                 Iterator<Cell> cellIterator = row.cellIterator(); // iterating over each column
 
 
-                XSSFCell cellTime = sheet.getRow(row.getRowNum()).getCell(0);
-                XSSFCell cellFthrust = sheet.getRow(row.getRowNum()).getCell(1);
+                rowNum = row.getRowNum();
 
+                XSSFCell previousRowTime = sheet.getRow(previousRowNum).getCell(timeCellNum);
+                XSSFCell rowTime = sheet.getRow(rowNum).getCell(timeCellNum);
 
-                double time = cellTime.getNumericCellValue();
+                XSSFCell previousRowFt = sheet.getRow(previousRowNum).getCell(CdCellNum);
+                XSSFCell rowFt = sheet.getRow(rowNum).getCell(CdCellNum);
 
-                double sub = time - previousTime;
-                F_Thrust.add((double) cellFthrust.getNumericCellValue());
+                F_Thrust.add(rowFt.getNumericCellValue());
 
-//				if(sub == 0.01) {
-//					F_Thrust.add((double) cellFthrust.getNumericCellValue());
-//				}else {
+                ArrayList<Double> interValues = new ArrayList<>();
+//                double previousTime = previousRowTime.getNumericCellValue();
+//                double previousFt = previousRowFt.getNumericCellValue();
+//                double currentTime = rowTime.getNumericCellValue();
+//                double currentFt = rowFt.getNumericCellValue();
+//                interValues = interpolation(
+//                        change(check(previousTime), 2),
+//                        previousFt,
+//                        change(check(currentTime), 2),
+//                        currentFt
+//                );
 //
-//				}
+//                if (interValues != null){
+//                    if (!interValues.isEmpty()){
+//                        F_Thrust.addAll(interValues);
+//                    }
+//                }
+                previousRowNum = rowNum;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        }catch (Exception e){
+
         }
     }
 
@@ -306,12 +332,15 @@ public class Aerodynamic {
         }
     }
 
+
+
+
     public ArrayList<Double> interpolation(double previousTime, double previousValue, double currentTime, double currentValue){
 
         if (currentValue != 0){
             ArrayList<Double> interValues = new ArrayList<>();
 
-            interValues.add(previousValue);
+
 
             int count = (int) ((currentTime - previousTime) / 0.01 - 1);
             double slope = (currentValue - previousValue)/(currentTime - previousTime);
@@ -322,6 +351,7 @@ public class Aerodynamic {
                 interValues.add(interNextCd);
                 previousValue = interNextCd;
             }
+            interValues.add(currentValue);
             return interValues;
         }
 
@@ -343,7 +373,8 @@ public class Aerodynamic {
 
     static double check(double time){
         if (time>1000){
-            return time/10000;
+            double t = time/10000;
+            return t;
         }
         return time;
     }

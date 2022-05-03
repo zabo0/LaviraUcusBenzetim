@@ -14,11 +14,12 @@ public class Main {
 
     static double theta0 = 85;
 
-    static double mass0_total = 28.032;
-    static double mass0_engine = 4.349;  //4.659
+    static double mass0_total = 25;    //28.032
+    static double mass0_engine = 4.659;   //4.349  4.659
     static double altitude0 = 980;
-    static double isp = 197.6; //209.5       197.6
-    static double A_area = Math.PI * Math.pow(0.126,2);
+    static double isp = 209.5; //209.5       197.6
+    static double A_area = Math.PI * Math.pow(0.14,2); //0.126
+    static double L_length = 2;
 
     static double V0 = 2;
     static double v0_x = Math.cos(Math.toRadians(theta0))*V0;
@@ -43,14 +44,16 @@ public class Main {
         double altitude = altitude0;
         double previousTheta = theta0;
         double previousVelocity = V0;
+        double previousV_x = v0_x;
+        double previousV_z = v0_z;
         double previousXposition = x0_position;
         double previousZposition = z0_position;
 
-        System.out.println("\ttime\t|\tx position\t|\tz position\t|\tvelocity\t|\tvelocity_z\t|\ttheta\t\t|\taltitude\t|\tF thrust\t|\td mass\t\t|\tkt\t\t\t|\tkd\t\t\t|\tcd");
+        System.out.println("\ttime\t|\tx position\t|\tz position\t|\tvelocity\t|\tvelocity_z\t|\tvelocity_x\t|\ttheta\t\t|\taltitude\t|\tF thrust\t|\td mass\t\t|\tkt\t\t\t|\tkd\t\t\t|\tcd");
         System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
 
-        for( int i = 0; i<4500; i ++) {
+        for( int i = 0; i<5500; i ++) {
 
 
             double dynamicPressure = q_dynamicPressure(atm.Density(atm.Temperature(altitude), atm.Pressure(altitude)), previousVelocity);
@@ -58,19 +61,40 @@ public class Main {
 
             double density = atm.Density(atm.Temperature(altitude),atm.Pressure(altitude));
 
-            double kd = k_drag(density, Cd(i, altitude, previousVelocity, speedOfSound), A_area, mass);
-            double kt = k_thrust(F_thrust(i),mass);
             double cd = Cd(i, altitude, previousVelocity, speedOfSound);
+            double kd = k_drag(density, cd, A_area, mass);
+            double kt = k_thrust(F_thrust(i),mass);
 
 
 
+/////////////////////////The Parallel-Perpendicular Coordinate Frame////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             double velocity = V(kt,kd,previousTheta,previousVelocity);
-
             double theta = theta(previousTheta, velocity);
-
-
+            double vx = (velocity * Math.cos(Math.toRadians(theta))); //* time_iteration + previousV_x;
+            double vz = (velocity * Math.sin(Math.toRadians(theta)));//* time_iteration + previousV_z;
             double xPosition = x_position(velocity, theta, previousXposition);
-            double zPosition = z_position(velocity, theta, previousZposition);
+            double zPosition= z_position(velocity, theta, previousXposition);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////The X-Y Coordinate Frame///////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//            double Vcr = Vcr(kt, L_length);
+//            double vz = V_z(kt, kd, previousVelocity, previousV_z);
+//            double vx = V_x(kt, kd, previousVelocity, previousV_x);
+////            if (vx < Vcr){
+////                vx = vz * (previousV_z/previousV_x);
+////            }
+//            double velocity = V(vx, vz);
+//            double theta = theta(vz, vx, previousTheta);
+//            double xPosition = x_position(vx, previousXposition);
+//            double zPosition = z_position(vz, previousZposition);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
             x_positions.add(xPosition);
             z_positions.add(zPosition);
@@ -78,6 +102,8 @@ public class Main {
             altitude = altitude + zPosition - previousZposition;
             previousTheta = theta;
             previousVelocity = velocity;
+            previousV_x = vx;
+            previousV_z = vz;
             previousXposition = xPosition;
             previousZposition = zPosition;
             mass = mass - d_mass(i);
@@ -90,7 +116,8 @@ public class Main {
                             + "\t\t" + String.format("%.6f", x_positions.get(i))
                             + "\t\t" + String.format("%.6f", z_positions.get(i))
                             + "\t\t" + String.format("%.6f",velocity)
-                            + "\t\t" + String.format("%.6f",velocity * Math.sin(Math.toRadians(theta)))
+                            + "\t\t" + String.format("%.6f",vz)
+                            + "\t\t" + String.format("%.6f",vx)
                             + "\t\t" + String.format("%.6f",theta)
                             + "\t\t" + String.format("%.6f",altitude)
                             + "\t\t" + String.format("%.6f",F_thrust(i))
@@ -101,6 +128,8 @@ public class Main {
         }
     }
 
+
+/////////////////////////The Parallel-Perpendicular Coordinate Frame////////////////////////////////////////////////////
     static double V(double kt,double kd, double previousTheta, double previousVelocity) {
 
         double velocity = (kt - g * Math.cos(Math.toRadians(previousTheta)) - kd * Math.pow(previousVelocity, 2)) * time_iteration + previousVelocity;
@@ -116,8 +145,55 @@ public class Main {
         return (velocity * Math.sin(Math.toRadians(theta))) * time_iteration + previousZPosition;
     }
 
+    static double theta(double previousTheta, double velocity) {
+        double t = Math.toDegrees(((g/velocity) * Math.cos(Math.toRadians(previousTheta)))) * time_iteration + previousTheta;
+        return t;
+    }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////The X-Y Coordinate Frame///////////////////////////////////////////////////////////////////////
+//    static double V(double vx, double vz) {
+//
+//        double velocity = Math.sqrt(vx*vx + vz*vz);
+//
+//        return velocity;
+//    }
+//
+//    static double V_x(double kt, double kd, double previousVelocity, double previousV_x){
+//        double V_x = (kt * (previousV_x/previousVelocity) - kd *  previousVelocity * previousV_x) * time_iteration + previousV_x;
+//        return V_x;
+//    }
+//
+//    static double V_z(double kt, double kd, double previousVelocity, double previousV_z){
+//        double V_z = (kt * (previousV_z/previousVelocity) - kd * previousVelocity * previousV_z - g) * time_iteration + previousV_z;
+//        return V_z;
+//    }
+//
+//    static double Vcr(double kt, double L){
+//        double vcr= Math.sqrt(2 * kt * L);
+//        return vcr;
+//    }
+//
+//    static double x_position(double vx, double previousXPosition) {
+//        return vx * time_iteration + previousXPosition;
+//    }
+//
+//    static double z_position(double vz,  double previousZPosition) {
+//        return vz * time_iteration + previousZPosition;
+//    }
+//
+//    static double theta(double vx, double vz, double previousTheta) {
+//        double t = (Math.atan(vz/vx)) * time_iteration + previousTheta;
+//        return t;
+//    }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
     static double k_drag(double density, double Cd, double area, double mass) {
-        return (density*Cd*area)/(mass);
+        double kd = (density*Cd*area)/(2*mass);
+        return kd;
     }
 
     static double k_thrust(double F_thrust, double mass) {
@@ -125,7 +201,7 @@ public class Main {
     }
 
     static double d_mass(int iteration) {
-        double dMass = F_thrust(iteration)*time_iteration/(isp*g);
+        double dMass = (F_thrust(iteration) / (isp * g)) * time_iteration;
         return dMass;
     }
 
@@ -140,31 +216,27 @@ public class Main {
         return Ft;
     }
 
-    static double theta(double previousTheta, double velocity) {
-        return ((g/velocity) * Math.cos(previousTheta))* time_iteration + previousTheta;
-    }
-
     static double Cd(int i, double altitude, double velocity, double speedOfSound) {
-//        double mach = Double.parseDouble(new DecimalFormat("#,#").format(velocity/speedOfSound));
-//        double cd;
-//        if(mach == 0) {
-//            mach = 0.1;
-//        }
-//
-//        if(altitude < 3000) {
-//            cd = aero.getCd_0().get((int) (mach*10-1));
-//            return cd;
-//        }else if(altitude>=3000 && altitude<6000) {
-//            cd = aero.getCd_3().get((int) (mach*10-1));
-//            return cd;
-//        }else if(altitude>=6000 && altitude<12000) {
-//            cd = aero.getCd_6().get((int) (mach*10-1));
-//            return cd;
-//        }
-//        cd = aero.getCd_12().get((int) (mach*10-1));
-//        return cd;
+        double mach = Double.parseDouble(new DecimalFormat("#,#").format(velocity/speedOfSound));
+        double cd;
+        if(mach == 0) {
+            mach = 0.1;
+        }
 
-        return aero.getCd().get(i);
+        if(altitude < 3000) {
+            cd = aero.getCd_0().get((int) (mach*10-1));
+            return cd;
+        }else if(altitude>=3000 && altitude<6000) {
+            cd = aero.getCd_3().get((int) (mach*10-1));
+            return cd;
+        }else if(altitude>=6000 && altitude<12000) {
+            cd = aero.getCd_6().get((int) (mach*10-1));
+            return cd;
+        }
+        cd = aero.getCd_12().get((int) (mach*10-1));
+        return cd;
+
+//        return aero.getCd().get(i);
     }
 
     static double q_dynamicPressure(double density, double velocity) {

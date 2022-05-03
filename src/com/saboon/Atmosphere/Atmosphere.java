@@ -75,7 +75,7 @@ public class Atmosphere {
             }
         }
 
-        double C = -.0341631947363104;
+        double C = -0.0341631947363104;
         double Hb = table_Hb.get(i);
         double Lb = table_Lmb.get(i);
         double Tb = table_Tmb.get(i);
@@ -87,7 +87,7 @@ public class Atmosphere {
     }
 
     public static double Density(double temperature, double pressure) {
-        double density = pressure*.00348367635597379/temperature;
+        double density = pressure*0.00348367635597379/temperature;
         return density;
     }
 
