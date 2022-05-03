@@ -126,7 +126,8 @@ public class Main {
                             + "\t\t" + String.format("%.6f",mass)
                             + "\t\t" + String.format("%.6f",kt)
                             + "\t\t" + String.format("%.6f",kd)
-                            + "\t\t" + String.format("%.6f",cd));
+                            + "\t\t" + String.format("%.6f",cd)
+            );
 
             if (velocity <= 0){
                 break;
