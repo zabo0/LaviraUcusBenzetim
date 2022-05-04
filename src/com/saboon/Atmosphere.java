@@ -1,4 +1,4 @@
-package com.saboon.Atmosphere;
+package com.saboon;
 
 import java.util.ArrayList;
 
@@ -10,10 +10,10 @@ public class Atmosphere {
     static ArrayList<Double> table_Pb = new ArrayList<>();
 
     public Atmosphere() {
-        initialization();
+        table();
     }
 
-    static void initialization() {
+    static void table() {
         table_Hb.add(00000.0);
         table_Hb.add(11000.0);
         table_Hb.add(20000.0);
@@ -59,11 +59,8 @@ public class Atmosphere {
                 break;
             }
         }
-
-        double temperature = table_Tmb.get(i)+table_Lmb.get(i)*(H-table_Hb.get(i));
-        return temperature;
+        return table_Tmb.get(i)+table_Lmb.get(i)*(H-table_Hb.get(i));
     }
-
 
     public static double Pressure(double altitude) {
         double H = altitude*6356766/(altitude+6356766);
@@ -74,31 +71,20 @@ public class Atmosphere {
                 break;
             }
         }
-
         double C = -0.0341631947363104;
         double Hb = table_Hb.get(i);
         double Lb = table_Lmb.get(i);
         double Tb = table_Tmb.get(i);
         double Pb = table_Pb.get(i);
 
-        double pressure = Pb*(Math.abs(Lb)>1E-12?Math.pow(1+Lb/Tb*(H-Hb), C/Lb):Math.exp(C*(H-Hb)/Tb));
-
-        return pressure;
+        return Pb*(Math.abs(Lb)>1E-12?Math.pow(1+Lb/Tb*(H-Hb), C/Lb):Math.exp(C*(H-Hb)/Tb));
     }
 
     public static double Density(double temperature, double pressure) {
-        double density = pressure*0.00348367635597379/temperature;
-        return density;
+        return pressure*0.00348367635597379/temperature;
     }
-
 
     public static double SpeedOfSound(double temperature){
-        double sos = Math.sqrt(401.87430086589*temperature);
-        return sos;
-    }
-
-    public static double Gravity(double altitude) {
-        double gravity = 9.80665*Math.pow(1+altitude/6356766, -2);
-        return gravity;
+        return Math.sqrt(401.87430086589*temperature);
     }
 }

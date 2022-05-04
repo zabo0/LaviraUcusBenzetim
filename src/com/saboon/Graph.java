@@ -7,31 +7,12 @@ import java.util.ArrayList;
 
 public class Graph extends JPanel {
 
-
-
-    //initialize coordinates
-    //int[] vls = {65, 20, 40, 80, 54, 97, 62, 16,55, 67};
-
     private ArrayList<Double> vls = new ArrayList<>();
-
-
-
     int marg = 30;
 
-    public ArrayList<Double> getVls() {
-        return vls;
-    }
-
-    public void setVls(ArrayList<Double> vls) {
-        this.vls = vls;
-    }
-
     public Graph(ArrayList<Double> values){
-
         vls = values;
     }
-
-
 
     protected void paintComponent(Graphics grf){
         //create instance of the Graphics to use its methods
@@ -52,6 +33,8 @@ public class Graph extends JPanel {
         //find value of x and scale to plot points
         double x = (double)(width-2*marg)/(vls.size()-1);
         double scale = (double)(height-2*marg)/getMax();
+
+        graph.draw(new Line2D.Double(marg, marg, height - marg, marg));
 
         //set color for points
         graph.setPaint(Color.RED);

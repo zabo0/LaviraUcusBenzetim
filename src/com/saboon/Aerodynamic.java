@@ -289,7 +289,7 @@ public class Aerodynamic {
                 XSSFCell previousRowFt = sheet.getRow(previousRowNum).getCell(CdCellNum);
                 XSSFCell rowFt = sheet.getRow(rowNum).getCell(CdCellNum);
 
-                //F_Thrust.add(rowCd.getNumericCellValue());
+
 
                 ArrayList<Double> interValues = new ArrayList<>();
                 double previousTime = previousRowTime.getNumericCellValue();
@@ -323,8 +323,6 @@ public class Aerodynamic {
         if (currentValue != 0){
             ArrayList<Double> interValues = new ArrayList<>();
 
-
-
             int count = (int) ((currentTime - previousTime) / 0.01 - 1);
             double slope = (currentValue - previousValue)/(currentTime - previousTime);
             double interNextCd;
@@ -343,13 +341,9 @@ public class Aerodynamic {
 
     static double change(double value, int decimalpoint)
     {
-
-        // Using the pow() method
         value = value * Math.pow(10, decimalpoint);
         value = Math.floor(value);
         value = value / Math.pow(10, decimalpoint);
-
-        //System.out.println(value);
 
         return value;
     }

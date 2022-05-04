@@ -1,0 +1,170 @@
+System.out.println("\ttime\t|\tx position\t|\tz position\t|\tvelocity\t|\tvelocity_z\t|\tvelocity_x\t|\ttheta\t\t|\taltitude\t|\tF thrust\t|\td mass\t\t|\tkt\t\t\t|\tkd\t\t\t|\tcd");
+System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+
+
+/////////////////////////The Parallel-Perpendicular Coordinate Frame////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//            double velocity = V(kt,kd,previousTheta,previousVelocity);
+////            double theta = theta(previousV_z, velocity);
+//            double theta = theta(previousTheta, velocity);
+//            double vx = (velocity * Math.cos(Math.toRadians(theta))); //* time_iteration + previousV_x;
+//            double vz = (velocity * Math.sin(Math.toRadians(theta)));//* time_iteration + previousV_z;
+//            double xPosition = x_position(velocity, theta, previousXposition);
+//            double zPosition = z_position(velocity, theta, previousZposition);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////The X-Y Coordinate Frame///////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+            double vx = Vcr_Vx(vz,previousV_x,previousV_z);
+            if (vx > vcr){
+                vx = V_x(kt,kd,previousVelocity,previousV_x);
+            }
+
+
+static double mass0_engine = 4.659; //4.349  4.659
+
+
+            if(i%10 == 0){
+                System.out.println();
+            }
+            System.out.println(
+                    "\t" + String.format("%.2f",(double)i/100)
+                            + "\t\t" + String.format("%.6f", x_positions.get(i))
+                            + "\t\t" + String.format("%.6f", z_positions.get(i))
+                            + "\t\t" + String.format("%.6f",velocity)
+                            + "\t\t" + String.format("%.6f",vz)
+                            + "\t\t" + String.format("%.6f",vx)
+                            + "\t\t" + String.format("%.6f",theta)
+                            + "\t\t" + String.format("%.6f",altitude)
+                            + "\t\t" + String.format("%.6f",F_thrust(i))
+                            + "\t\t" + String.format("%.6f",mass)
+                            + "\t\t" + String.format("%.6f",kt)
+                            + "\t\t" + String.format("%.6f",kd)
+                            + "\t\t" + String.format("%.6f",cd)
+                            + "\t\t" + String.format("%.6f",vcr)
+            );
+
+
+
+
+            apogeeMach = mach(velocity,speedOfSound);
+
+            if (xPosition > apogeePointX){
+                apogeePointX = xPosition;
+            }
+            if (zPosition > apogeePointZ){
+                apogeePointZ = zPosition;
+            }
+            if (velocity > maxVelocity){
+                maxVelocity = velocity;
+            }
+            if (F_thrust(i) != 0){
+                burnout_time = (double) i/100;
+            }
+            if (mach > maxMach){
+                maxMach = mach;
+            }
+
+
+
+
+        System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+        System.out.println("Maximum Mach Sayisi:\t\t" + maxMach);
+        System.out.println("Tepe Noktasi Pozisyonu:\t\t[" + apogeePointX + ", 0, " + apogeePointZ + "]");
+        System.out.println("Tepe Noktasi Hizi:\t\t\t" + previousVelocity);
+        System.out.println("Tepe Noktasi Mach Sayisi:\t" + apogeeMach);
+        System.out.println("Tepe Noktasi Zamani:\t\t" + time_apogee);
+
+        System.out.println("\nMaximum Hizi:\t\t\t\t" + maxVelocity);
+        System.out.println("Burnout Zamani:\t\t\t\t" + burnout_time);
+
+
+
+
+/////////////////////////The Parallel-Perpendicular Coordinate Frame////////////////////////////////////////////////////
+//    static double V(double kt,double kd, double previousTheta, double previousVelocity) {
+//
+//        double velocity = (kt - g * Math.cos(Math.toRadians(previousTheta)) - kd * Math.pow(previousVelocity, 2)) * time_iteration + previousVelocity;
+//
+//        return velocity;
+//    }
+//
+//    static double x_position(double velocity, double theta, double previousXPosition) {
+//        return (velocity * Math.cos(Math.toRadians(theta))) * time_iteration + previousXPosition;
+//    }
+//
+//    static double z_position(double velocity, double theta, double previousZPosition) {
+//        return (velocity * Math.sin(Math.toRadians(theta))) * time_iteration + previousZPosition;
+//    }
+//
+////    static double theta(double previousTheta, double velocity) {
+////        double t = ((g/velocity) * Math.cos(previousTheta)) * time_iteration + previousTheta;
+////        return t;
+////    }
+//
+//        static double theta(double vz, double velocity) {
+//        double t = Math.asin(vz/velocity);
+//        return t;
+//    }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+    static double Vcr_Vx(double vz, double previousVx, double previousVz){
+        double vcr = vz * (previousVx/previousVz);
+        return vcr;
+    }
+
+
+
+
+
+    double vcr = Vcr(kt,L_length);
+
+
+    static double time0 = 0;
+    static double maxMach = 0;
+        static double apogeeMach = 0;
+        static double maxVelocity = 0;
+        static double apogeePointX = 0;
+            static double apogeePointZ = 0;
+            static double burnout_time = 0;
+                static double time_flight = 2 * time_apogee;
+
+
+
+   static double F_thrust(int iteration) {
+           double Ft;
+           try {
+               Ft = aero.getF_Thrust().get(iteration);
+           } catch (Exception e) {
+               return 0;
+           }
+           return Ft;
+       }
+
+
+      static double Cd(int i, double altitude, double mach) {
+          double cd;
+          if(Double.parseDouble(new DecimalFormat("#,#").format(mach)) == 0) {
+              mach = 0.1;
+          }
+          if(altitude < 3000) {
+              cd = aero.getCd_0().get((int) (mach*10-1));
+              return cd;
+          }else if(altitude>=3000 && altitude<6000) {
+              cd = aero.getCd_3().get((int) (mach*10-1));
+              return cd;
+          }else if(altitude>=6000 && altitude<12000) {
+              cd = aero.getCd_6().get((int) (mach*10-1));
+              return cd;
+          }
+          cd = aero.getCd_12().get((int) (mach*10-1));
+          return cd;
+      }
+
+      static double L_length = 3.52;
